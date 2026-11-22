@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Little Learners">
+<title>Little Learners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#dff3ff;--ink:#3b2a5a;--card:#fff;--sun:#ffd84d;--sky:#4fc3f7;--grass:#66bb6a;--coral:#ff7a66;--plum:#8e6bd8;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d2a44;--ink:#fff7e0;--card:#2c3b5c}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Baloo 2",ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;font-weight:600;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:16px;text-align:center}
+h1{font-size:clamp(40px,8vw,84px);margin:0;font-weight:800;line-height:1}
+.sub{font-size:clamp(20px,3.5vw,34px);margin:0}
+.big{font-family:inherit;font-weight:800;color:#fff;border:0;border-radius:36px;cursor:pointer;box-shadow:0 8px 0 rgba(0,0,0,.18);transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.play{font-size:clamp(36px,7vw,72px);padding:24px 64px;background:var(--grass)}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:min(900px,100%)}
+.menu .big{font-size:clamp(22px,3.8vw,42px);padding:clamp(10px,2.5vh,28px) 8px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.menu .big span{font-size:clamp(44px,min(9vw,12vh),96px);line-height:1}
+.top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;font-size:30px;font-weight:800}
+.home{background:var(--plum);font-size:28px;padding:8px 22px;border-radius:26px}
+.stage{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center;max-width:900px;min-height:20vh}
+.item{font-size:clamp(56px,10vw,110px);line-height:1.05;background:none;border:0;cursor:pointer;padding:2px;font-family:inherit}
+.item.pop{animation:pop .4s}
+.pic{font-size:clamp(110px,22vw,230px);line-height:1}
+.q{font-size:clamp(30px,5vw,56px);font-weight:800;margin:0}
+.opts{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+.opt{font-size:clamp(48px,9vw,100px);min-width:clamp(120px,22vw,230px);padding:12px 22px}
+.opt.txt{font-size:clamp(30px,5.5vw,60px)}
+.c0{background:var(--coral)}.c1{background:var(--sky)}.c2{background:var(--plum)}
+.opt.no{animation:shake .4s;opacity:.35;pointer-events:none}
+.opt.yes{background:var(--grass);animation:pop .5s}
+.plus{font-size:clamp(50px,9vw,100px);font-weight:800}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-60px;font-style:normal;font-size:44px;animation:fall 1.6s ease-in forwards}
+.name{font-family:inherit;font-size:20px;padding:8px 14px;border-radius:16px;border:3px solid var(--sky);width:230px;text-align:center;user-select:text;-webkit-user-select:text}
+@keyframes pop{50%{transform:scale(1.35)}}
+@keyframes shake{25%{transform:translateX(-14px)}75%{transform:translateX(14px)}}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.item.pop,.opt.yes,.opt.no,.confetti i{animation:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $=document.getElementById('app');
+let stars=0,kid='';
+try{kid=localStorage.getItem('kid')||''}catch(e){}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const numWords=['zero','one','two','three','four','five','six','seven','eight','nine','ten'];
+
+function speak(t){
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-AU';u.rate=.85;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}
+}
+function confetti(){
+  const d=document.createElement('div');d.className='confetti';
+  d.innerHTML=Array.from({length:22},()=>`<i style="left:${Math.random()*100}%;animation-delay:${Math.random()*.4}s">${pick(['⭐','🎉','✨','🌈','🎈'])}</i>`).join('');
+  document.body.appendChild(d);setTimeout(()=>d.remove(),2400);
+}
+function praise(){const n=kid?`, ${kid}`:'';return pick([`Well done${n}!`,`Hooray${n}!`,`You did it${n}!`,`Super${n}!`,`Fantastic${n}!`])}
+
+function home(){
+  $.innerHTML=`<h1>Little Learners</h1>
+  <p class="sub">${stars?'⭐ '+stars+' stars':'Pick a game!'}</p>
+  <div class="menu">
+    <button class="big c0" data-g="count"><span>🍎</span>Count</button>
+    <button class="big c1" data-g="add"><span>➕</span>Add</button>
+    <button class="big c2" data-g="letters"><span>🔤</span>Letters</button>
+    <button class="big" style="background:var(--grass)" data-g="world"><span>🌍</span>World</button>
+    <button class="big" style="background:#e8508a" data-g="colours"><span>🎨</span>Colours</button>
+    <button class="big" style="background:#f29b38" data-g="vehicles"><span>🚒</span>Vehicles</button>
+    <button class="big" style="background:#26a69a" data-g="animals"><span>🐮</span>Animals</button>
+  </div>
+  <input class="name" id="nm" placeholder="Name (for grown-ups)" value="${kid}" maxlength="20" autocomplete="off">`;
+  $.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>start(b.dataset.g));
+  document.getElementById('nm').onchange=e=>{kid=e.target.value.trim();try{localStorage.setItem('kid',kid)}catch(x){}};
+}
+
+function welcome(){
+  $.innerHTML=`<h1>Little Learners</h1><div class="pic">🦘</div>
+  <button class="big play" id="go">Play!</button>`;
+  document.getElementById('go').onclick=()=>{speak(kid?`Hello ${kid}! Let's play!`:`Hello! Let's play!`);home()};
+}
+
+let game='',round=0,used=new Set();
+function fresh(a){const r=a.filter(x=>!used.has(x));const v=pick(r.length?r:a);used.add(v);return v}
+const ROUNDS=8;
+function start(g){game=g;round=0;used=new Set();next()}
+function next(){
+  if(round>=ROUNDS){
+    stars+=0;confetti();speak(`All done! You are a star${kid?', '+kid:''}!`);
+    $.innerHTML=`<div class="pic">🏆</div><h1>All done!</h1><button class="big play" id="h">Home</button>`;
+    document.getElementById('h').onclick=home;return;
+  }
+  round++;({count,add,letters,world,colours,vehicles,animals})[game]();
+}
+
+function frame(visual,prompt,opts,correct,onAsk){
+  $.innerHTML=`<div class="top"><button class="big home" id="hm">🏠</button><span>⭐ ${stars}</span></div>
+  ${visual}<p class="q">${prompt}</p><div class="opts" id="ops"></div>`;
+  document.getElementById('hm').onclick=home;
+  const ops=document.getElementById('ops');
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className=`big opt c${i%3}`+(o.txt?' txt':'');b.textContent=o.label;
+    if(o.bg){b.style.background=o.bg;b.style.border='5px solid var(--ink)';b.textContent='\u00a0\u00a0'}
+    b.onclick=()=>{
+      if(i===correct){
+        b.classList.add('yes');stars++;confetti();speak(praise());
+        ops.querySelectorAll('button').forEach(x=>x.style.pointerEvents='none');
+        setTimeout(next,1900);
+      }else{b.classList.add('no');speak('Try again!')}
+    };
+    ops.appendChild(b);
+  });
+  setTimeout(()=>speak(onAsk),300);
+}
+function numberChoices(ans,max=10){
+  const s=new Set([ans]);while(s.size<3){const n=1+Math.floor(Math.random()*max);s.add(n)}
+  const arr=shuffle([...s]);return{opts:arr.map(n=>({label:String(n)})),correct:arr.indexOf(ans)};
+}
+
+function count(){
+  const n=1+Math.floor(Math.random()*9),e=pick(['🍎','🐥','⭐','🚗','🐠','🌸','🎈']);
+  const {opts,correct}=numberChoices(n);
+  frame(`<div class="stage" id="st">${Array.from({length:n},()=>`<button class="item">${e}</button>`).join('')}</div>`,'How many?',opts,correct,'Tap each one to count. How many are there?');
+  let c=0;
+  document.querySelectorAll('#st .item').forEach(b=>b.onclick=()=>{
+    if(b.dataset.d)return;b.dataset.d=1;c++;b.classList.add('pop');speak(numWords[c]);
+  });
+}
+
+function add(){
+  const a=1+Math.floor(Math.random()*5),b=1+Math.floor(Math.random()*5),e=pick(['🍎','🐥','🍪','🍓','🐠']);
+  const {opts,correct}=numberChoices(a+b,10);
+  const grp=k=>Array.from({length:k},()=>`<span class="item">${e}</span>`).join('');
+  frame(`<div class="stage"><div class="stage">${grp(a)}</div><span class="plus">+</span><div class="stage">${grp(b)}</div></div>`,`${a} and ${b} more. How many?`,opts,correct,`${numWords[a]} and ${numWords[b]} more. How many altogether?`);
+}
+
+const WORDS=[['🍎','A','apple'],['🐻','B','bear'],['🐱','C','cat'],['🐶','D','dog'],['🐘','E','elephant'],['🐟','F','fish'],['🍇','G','grapes'],['🏠','H','house'],['🦘','K','kangaroo'],['🌙','M','moon'],['☀️','S','sun'],['🌳','T','tree']];
+function letters(){
+  const w=fresh(WORDS);const s=new Set([w[1]]);
+  while(s.size<3)s.add(pick(WORDS)[1]);
+  const arr=shuffle([...s]);
+  frame(`<div class="pic" id="pc">${w[0]}</div>`,'What letter does it start with?',arr.map(l=>({label:l})),arr.indexOf(w[1]),`This is a ${w[2]}. What letter does ${w[2]} start with?`);
+  document.getElementById('pc').onclick=()=>speak(w[2]);
+}
+
+const PLACES=[['🦘','kangaroo','Australia'],['🐨','koala','Australia'],['🐼','panda','Asia'],['🦁','lion','Africa'],['🦒','giraffe','Africa'],['🐧','penguin','Antarctica'],['🦙','llama','South America'],['🦅','eagle','North America'],['🐯','tiger','Asia'],['🦓','zebra','Africa']];
+const CONT=['Australia','Asia','Africa','Antarctica','South America','North America'];
+function world(){
+  const p=fresh(PLACES);const s=new Set([p[2]]);
+  while(s.size<3)s.add(pick(CONT));
+  const arr=shuffle([...s]);
+  frame(`<div class="pic" id="pc">${p[0]}</div>`,`Where does the ${p[1]} live?`,arr.map(c=>({label:c,txt:1})),arr.indexOf(p[2]),`Where does the ${p[1]} live?`);
+  document.getElementById('pc').onclick=()=>speak(p[1]);
+}
+
+const COL=[['red','#e53935'],['blue','#1e88e5'],['yellow','#fdd835'],['green','#43a047'],['orange','#fb8c00'],['purple','#8e24aa'],['pink','#f06292'],['brown','#6d4c41'],['black','#212121'],['white','#ffffff']];
+const COLOBJ=[['🍓','red','strawberry'],['🍌','yellow','banana'],['🐸','green','frog'],['🥕','orange','carrot'],['🫐','blue','blueberry'],['🍇','purple','grape'],['🌸','pink','flower'],['🍫','brown','chocolate'],['🍅','red','tomato']];
+function colours(){
+  let o=null,t;
+  if(Math.random()<.4){o=fresh(COLOBJ);t=COL.find(c=>c[0]===o[1])}else t=fresh(COL);
+  const s=new Set([t]);while(s.size<3)s.add(pick(COL));
+  const arr=shuffle([...s]);
+  const q=o?`What colour is a ${o[2]}?`:`Tap the ${t[0]} one!`;
+  frame(`<button class="item pic" id="sp">${o?o[0]:'🔊'}</button>`,q,arr.map(c=>({bg:c[1]})),arr.indexOf(t),q);
+  document.getElementById('sp').onclick=()=>speak(q);
+}
+const VEH=[['🚗','car'],['🚌','bus'],['🚒','fire truck'],['🚑','ambulance'],['🚜','tractor'],['🚲','bike'],['✈️','aeroplane'],['🚂','train'],['🚁','helicopter'],['🚢','ship'],['🛵','scooter'],['🏍️','motorbike'],['🚓','police car'],['🚀','rocket'],['🚛','truck']];
+function vehicles(){
+  const t=fresh(VEH),s=new Set([t]);while(s.size<3)s.add(pick(VEH));
+  const arr=shuffle([...s]);const q=`Find the ${t[1]}!`;
+  frame(`<button class="item pic" id="sp">🔊</button>`,q,arr.map(x=>({label:x[0]})),arr.indexOf(t),q);
+  document.getElementById('sp').onclick=()=>speak(q);
+}
+const ANI=[['🐶','dog'],['🐱','cat'],['🐮','cow'],['🐷','pig'],['🐑','sheep'],['🐴','horse'],['🐔','chicken'],['🦆','duck'],['🐸','frog'],['🐵','monkey'],['🦁','lion'],['🐘','elephant'],['🐢','turtle'],['🐝','bee'],['🦋','butterfly'],['🐙','octopus'],['🐬','dolphin'],['🦒','giraffe']];
+const SND={dog:'woof',cat:'meow',cow:'moo',pig:'oink',sheep:'baa',duck:'quack',frog:'ribbit',horse:'neigh',chicken:'cluck'};
+function animals(){
+  const t=fresh(ANI),s=new Set([t]);while(s.size<3)s.add(pick(ANI));
+  const arr=shuffle([...s]);
+  const q=SND[t[1]]&&Math.random()<.5?`Which animal says ${SND[t[1]]}?`:`Find the ${t[1]}!`;
+  frame(`<button class="item pic" id="sp">🔊</button>`,q,arr.map(x=>({label:x[0]})),arr.indexOf(t),q);
+  document.getElementById('sp').onclick=()=>speak(q);
+}
+
+welcome();
+</script>
+</body>
+</html>
