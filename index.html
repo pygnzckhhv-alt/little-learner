@@ -78,6 +78,8 @@ function home(){
     <button class="big" style="background:#e8508a" data-g="colours"><span>🎨</span>Colours</button>
     <button class="big" style="background:#f29b38" data-g="vehicles"><span>🚒</span>Vehicles</button>
     <button class="big" style="background:#26a69a" data-g="animals"><span>🐮</span>Animals</button>
+    <button class="big" style="background:#5c6bc0" data-g="sky"><span>☁️</span>Sky</button>
+    <button class="big" style="background:#0277bd" data-g="sea"><span>🐠</span>Sea</button>
   </div>
   <input class="name" id="nm" placeholder="Name (for grown-ups)" value="${kid}" maxlength="20" autocomplete="off">`;
   $.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>start(b.dataset.g));
@@ -100,7 +102,7 @@ function next(){
     $.innerHTML=`<div class="pic">🏆</div><h1>All done!</h1><button class="big play" id="h">Home</button>`;
     document.getElementById('h').onclick=home;return;
   }
-  round++;({count,add,letters,world,colours,vehicles,animals})[game]();
+  round++;({count,add,letters,world,colours,vehicles,animals,sky,sea})[game]();
 }
 
 function frame(visual,prompt,opts,correct,onAsk){
@@ -112,6 +114,7 @@ function frame(visual,prompt,opts,correct,onAsk){
     const b=document.createElement('button');
     b.className=`big opt c${i%3}`+(o.txt?' txt':'');b.textContent=o.label;
     if(o.bg){b.style.background=o.bg;b.style.border='5px solid var(--ink)';b.textContent='\u00a0\u00a0'}
+    if(o.html)b.innerHTML=o.html;
     b.onclick=()=>{
       if(i===correct){
         b.classList.add('yes');stars++;confetti();speak(praise());
@@ -189,6 +192,23 @@ function animals(){
   const arr=shuffle([...s]);
   const q=SND[t[1]]&&Math.random()<.5?`Which animal says ${SND[t[1]]}?`:`Find the ${t[1]}!`;
   frame(`<button class="item pic" id="sp">🔊</button>`,q,arr.map(x=>({label:x[0]})),arr.indexOf(t),q);
+  document.getElementById('sp').onclick=()=>speak(q);
+}
+
+const SKY=[['🐦','bird'],['✈️','aeroplane'],['🚁','helicopter'],['🎈','balloon'],['🪁','kite'],['🌙','moon'],['⭐','star'],['☀️','sun'],['☁️','cloud'],['🌈','rainbow'],['🚀','rocket'],['🦋','butterfly'],['🦇','bat'],['☄️','comet'],['🪂','parachute'],['🛸','flying saucer']];
+function sky(){
+  const t=fresh(SKY),s=new Set([t]);while(s.size<3)s.add(pick(SKY));
+  const arr=shuffle([...s]);const q=`Find the ${t[1]} in the sky!`;
+  frame(`<button class="item pic" id="sp">🔊</button>`,q,arr.map(x=>({label:x[0]})),arr.indexOf(t),q);
+  document.getElementById('sp').onclick=()=>speak(q);
+}
+const SUB='<svg viewBox="0 0 100 60" width="1.2em" height="0.72em" style="vertical-align:middle"><rect x="6" y="28" width="7" height="16" rx="2" fill="#8d6e63"/><rect x="62" y="2" width="4" height="14" fill="#5d4037"/><rect x="54" y="2" width="12" height="4" fill="#5d4037"/><rect x="40" y="12" width="26" height="12" rx="4" fill="#ffb300"/><ellipse cx="52" cy="36" rx="40" ry="18" fill="#ffca28" stroke="#8d6e63" stroke-width="3"/><circle cx="34" cy="36" r="6" fill="#81d4fa" stroke="#5d4037" stroke-width="2"/><circle cx="54" cy="36" r="6" fill="#81d4fa" stroke="#5d4037" stroke-width="2"/><circle cx="74" cy="36" r="6" fill="#81d4fa" stroke="#5d4037" stroke-width="2"/></svg>';
+const DIVER='<svg viewBox="0 0 100 100" width="1em" height="1em" style="vertical-align:middle"><rect x="28" y="40" width="10" height="26" rx="4" fill="#ef5350"/><rect x="40" y="38" width="22" height="32" rx="9" fill="#263238"/><rect x="60" y="42" width="22" height="7" rx="3" fill="#263238"/><rect x="42" y="68" width="8" height="20" rx="3" fill="#263238"/><rect x="52" y="68" width="8" height="20" rx="3" fill="#263238"/><polygon points="38,88 52,88 52,97 30,97" fill="#fdd835"/><polygon points="50,88 64,88 72,97 50,97" fill="#fdd835"/><circle cx="51" cy="24" r="13" fill="#ffcc80"/><rect x="41" y="19" width="22" height="9" rx="4" fill="#4fc3f7" stroke="#263238" stroke-width="2"/><rect x="64" y="8" width="4" height="18" fill="#ef5350"/></svg>';
+const SEA=[['🐟','fish'],['🐠','tropical fish'],['🐡','pufferfish'],['🦈','shark'],['🐙','octopus'],['🐬','dolphin'],['🐳','whale'],['🦀','crab'],['🐢','turtle'],['🦑','squid'],['🐚','shell'],['🦞','lobster'],['🦭','seal'],['⛵','sailing boat'],[SUB,'submarine'],[DIVER,'diver']];
+function sea(){
+  const t=fresh(SEA),s=new Set([t]);while(s.size<3)s.add(pick(SEA));
+  const arr=shuffle([...s]);const q=`Find the ${t[1]} under the sea!`;
+  frame(`<button class="item pic" id="sp">🔊</button>`,q,arr.map(x=>x[0].startsWith('<svg')?{html:x[0]}:{label:x[0]}),arr.indexOf(t),q);
   document.getElementById('sp').onclick=()=>speak(q);
 }
 
